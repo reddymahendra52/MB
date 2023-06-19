@@ -12,10 +12,10 @@ const port = process.env.PORT || 8080;
 
 // Connection to MySQL Database
 // const connection = mysql.createConnection({
-//   host: "localhost",
+//   host: "127.0.0.1",
 //   user: "root",
 //   password: "root123",
-//   database: "maidtest",
+//   database: "maid",
 // });
 
 const connection = mysql.createConnection({
@@ -40,14 +40,21 @@ app.use(bodyParser.json());
 // POST API to add data to database
 app.post("/api/add/bookings", (req, res) => {
   const data = req.body;
+  console.log(data);
 
   const booking_id = uuid.v4();
   const insertQuery =
-    "INSERT INTO bookings (booking_id, worker_id, customer_id, location, type_of_work, area, date, amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO bookings (booking_id, worker_id, worker_name, worker_email, worker_phone, customer_id, customer_name, customer_email, customer_phone, location, type_of_work, area, date, amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const insertValues = [
     booking_id,
     data.worker_id,
+    data.worker_name,
+    data.worker_email,
+    data.worker_phone,
     data.customer_id,
+    data.customer_name,
+    data.customer_email,
+    data.customer_phone,
     data.to_location,
     data.type_of_work,
     data.area,
@@ -293,6 +300,24 @@ app.put("/api/update/worker/:id", (req, res) => {
   });
 });
 
+// Get Profile By ID
+app.put("/api/getByID/worker/:id", (req, res) => {
+  const data = req.body;
+  const id = req.params.id;
+  const query = "SELECT * FROM worker WHERE id = ?";
+  const values = [id];
+
+  connection.query(query, values, (err, result) => {
+    if (err) {
+      res.status(500).send("Server Unavailable");
+    } else if (result.affectedRows === 0) {
+      res.status(404).send("No data found to update");
+    } else {
+      res.status(200).json(result);
+    }
+  });
+});
+
 // ------------------------------ Customer APIs ---------------------------------
 
 // POST API to insert data into database
@@ -449,6 +474,24 @@ app.delete("/api/delete/customers/:id", (req, res) => {
       res.status(404).send("No data found to delete");
     } else {
       res.status(200).send("Data deleted successfully");
+    }
+  });
+});
+
+// Get Profile By ID
+app.put("/api/getByID/customers/:id", (req, res) => {
+  const data = req.body;
+  const id = req.params.id;
+  const query = "SELECT * FROM customers WHERE id = ?";
+  const values = [id];
+
+  connection.query(query, values, (err, result) => {
+    if (err) {
+      res.status(500).send("Server Unavailable");
+    } else if (result.affectedRows === 0) {
+      res.status(404).send("No data found to update");
+    } else {
+      res.status(200).json(result);
     }
   });
 });
